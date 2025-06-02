@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Account</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: #f7f7f7;
+            color: #222;
+            margin: 0;
+            padding: 0;
+        }
+        .user-account {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .user-account h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .user-account form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .user-account input,
+        .user-account select {
+            padding: 0.7rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .hidden { display: none; }
+        .visible { display: block; }
+    </style>
+</head>
+<body>
+    <div class="user-account">
+        <h2>User Account</h2>
+        <div id="account-forms">
+            <div id="login-form" class="visible">
+                <h3>Login</h3>
+                <form onsubmit="return loginUser(event)">
+                    <input type="email" id="login-email" placeholder="Email" required><br><br>
+                    <input type="password" id="login-password" placeholder="Password" required><br><br>
+                    <button type="submit">Login</button>
+                    <p>Don't have an account? <a href="#" onclick="showSignup();return false;">Sign Up</a></p>
+                </form>
+            </div>
+            <div id="signup-form" class="hidden">
+                <h3>Sign Up</h3>
+                <form onsubmit="return signupUser(event)">
+                    <input type="text" id="signup-name" placeholder="Full Name" required><br><br>
+                    <input type="email" id="signup-email" placeholder="Email" required><br><br>
+                    <input type="password" id="signup-password" placeholder="Password" required><br><br>
+                    <button type="submit">Sign Up</button>
+                    <p>Already have an account? <a href="#" onclick="showLogin();return false;">Login</a></p>
+                </form>
+            </div>
+            <div id="user-profile" class="hidden">
+                <h3>Welcome, <span id="user-name"></span>!</h3>
+            </div>
+        </div>
+    </div>
+    <script>
+        let currentUser = null;
+        // --- Sync with parent window ---
+        function receiveLoginState(event) {
+            if (event.data && event.data.type === 'LOGIN_STATE') {
+                currentUser = event.data.user;
+                updateUserUI();
+            }
+        }
+        window.addEventListener('message', receiveLoginState);
+        function updateUserUI() {
+            if (currentUser) {
+                document.getElementById('user-name').textContent = currentUser.name;
+                document.getElementById('login-form').classList.remove('visible');
+                document.getElementById('login-form').classList.add('hidden');
+                document.getElementById('signup-form').classList.remove('visible');
+                document.getElementById('signup-form').classList.add('hidden');
+                document.getElementById('user-profile').classList.remove('hidden');
+                document.getElementById('user-profile').classList.add('visible');
+            } else {
+                document.getElementById('user-profile').classList.remove('visible');
+                document.getElementById('user-profile').classList.add('hidden');
+                document.getElementById('login-form').classList.remove('hidden');
+                document.getElementById('login-form').classList.add('visible');
+            }
+        }
+        function showSignup() {
+            document.getElementById('login-form').classList.remove('visible');
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('signup-form').classList.remove('hidden');
+            document.getElementById('signup-form').classList.add('visible');
+        }
+        function showLogin() {
+            document.getElementById('signup-form').classList.remove('visible');
+            document.getElementById('signup-form').classList.add('hidden');
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('login-form').classList.add('visible');
+        }
+        function loginUser(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            currentUser = { name: email.split('@')[0], email };
+            updateUserUI();
+            // Notify parent
+            window.parent.postMessage({ type: 'LOGIN_ACTION', action: 'login', user: currentUser }, '*');
+            return false;
+        }
+        function signupUser(e) {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            currentUser = { name, email };
+            updateUserUI();
+            window.parent.postMessage({ type: 'LOGIN_ACTION', action: 'login', user: currentUser }, '*');
+            return false;
+        }
+        function logoutUser() {
+            currentUser = null;
+            updateUserUI();
+            window.parent.postMessage({ type: 'LOGIN_ACTION', action: 'logout' }, '*');
+        }
+        // Add click-to-logout on username
+        document.addEventListener('DOMContentLoaded', function() {
+            const nameSpan = document.getElementById('user-name');
+            if (nameSpan) {
+                nameSpan.style.cursor = 'pointer';
+                nameSpan.title = 'Click to log out';
+                nameSpan.onclick = logoutUser;
+            }
+        });
+        // Request initial state from parent
+        window.parent.postMessage({ type: 'LOGIN_ACTION', action: 'request_state' }, '*');
+    </script>
+</body>
+</html>

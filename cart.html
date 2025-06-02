@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Shopping Cart – Ezzys Supermart</title>
+    <link rel="stylesheet" href="ezzys.css">
+    <style>
+        body { font-family: 'Roboto', Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
+        .cart-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2002;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            padding: 2.5rem 2.5rem 2rem 2.5rem;
+            max-width: 480px;
+            min-width: 340px;
+            width: 90vw;
+            max-height: 80vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 { text-align: center; color: #2d8f3c; margin-bottom: 2rem; }
+        .back-link { display: block; margin-bottom: 2rem; color: #2d8f3c; font-weight: 700; text-decoration: none; }
+        #cart-items-list ul {
+            padding: 0;
+            margin: 0 0 1.2rem 0;
+            list-style: none;
+        }
+        #cart-items-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1.1rem;
+            background: #f8f8f8;
+            border-radius: 8px;
+            padding: 0.7rem 0.8rem;
+            box-shadow: 0 1px 4px rgba(45,143,60,0.06);
+        }
+        #cart-items-list img {
+            width: 44px;
+            height: 34px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+        #cart-items-list b {
+            flex: 1;
+            font-size: 1.08rem;
+            color: #222;
+        }
+        #cart-items-list span {
+            font-weight: 500;
+            color: #444;
+        }
+        #cart-total {
+            font-weight: bold;
+            font-size: 1.18rem;
+            margin-bottom: 1.2rem;
+            text-align: right;
+            width: 100%;
+        }
+        #cart-checkout-btn {
+            background: #2d8f3c;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 0.7rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 0.7rem;
+            transition: background 0.15s;
+        }
+        #cart-checkout-btn:hover {
+            background: #256f2e;
+        }
+        @media (max-width: 600px) {
+            .cart-container {
+                min-width: 95vw !important;
+                padding: 1.2rem 0.5rem 1rem 0.5rem !important;
+            }
+        }
+        /* Modal styles */
+        .checkout-modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2001;
+            display: none;
+        }
+        .checkout {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2002;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            padding: 2rem;
+            max-width: 480px;
+            width: 90vw;
+            display: none;
+        }
+        .checkout.visible {
+            display: block;
+        }
+        .order-success {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <a href="ezzys.html" class="back-link">&larr; Back to Shop</a>
+    <div class="cart-container">
+        <h1>Your Shopping Cart</h1>
+        <div id="cart-items-list"></div>
+        <div id="cart-total"></div>
+        <button id="cart-checkout-btn">Checkout</button>
+        <button id="clear-cart-btn" style="background:#ff4d4d;color:#fff;border:none;border-radius:6px;padding:0.7rem 1.5rem;font-size:1rem;font-weight:700;cursor:pointer;width:100%;margin-top:0.7rem;">Clear Cart</button>
+    </div>
+    <!-- Modal Backdrop and Modals -->
+    <div class="checkout-modal-backdrop" id="checkout-modal-backdrop"></div>
+    <section class="checkout checkout-section" id="checkout">
+        <h2>Checkout</h2>
+        <form id="checkout-form">
+            <input type="text" id="checkout-name" placeholder="Full Name" required><br><br>
+            <input type="text" id="checkout-address" placeholder="Delivery Address" required><br><br>
+            <input type="text" id="checkout-location" placeholder="Precise Location (e.g. GPS, landmark, etc.)" required><br><br>
+            <input type="tel" id="checkout-phone" placeholder="Phone Number" required><br><br>
+            <label for="checkout-payment">Payment Method</label>
+            <select id="checkout-payment" required>
+                <option value="">Select Payment Method</option>
+                <option value="card">Credit/Debit Card</option>
+                <option value="mobile">Mobile Payment</option>
+                <option value="bank">Bank Transfer</option>
+                <option value="cod">Cash on Delivery</option>
+            </select><br><br>
+            <div id="payment-method-summary"></div>
+            <button type="submit">Place Order</button>
+        </form>
+        <div id="order-success" class="order-success">
+            <strong>Order placed successfully! Thank you for shopping with us.</strong>
+        </div>
+    </section>
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <script>
+        // Load cart from localStorage
+        function loadCartFromStorage() {
+            const stored = localStorage.getItem('ezzy_cart');
+            return stored ? JSON.parse(stored) : [];
+        }
+        function renderCart() {
+            const cart = loadCartFromStorage();
+            const cartItemsList = document.getElementById('cart-items-list');
+            const cartTotal = document.getElementById('cart-total');
+            if (!cartItemsList || !cartTotal) return;
+            if (cart.length === 0) {
+                cartItemsList.innerHTML = '<p>Your cart is empty.</p>';
+                cartTotal.textContent = '';
+                return;
+            }
+            cartItemsList.innerHTML = '<ul style="list-style:none;padding:0;">' + cart.map(item => {
+                let badge = '';
+                if (item.deal && item.oldPrice && item.oldPrice > item.price) {
+                    const discount = Math.round(100 * (item.oldPrice - item.price) / item.oldPrice);
+                    badge = `<span style=\"background:#ffb300;color:#fff;padding:2px 7px;border-radius:4px;font-size:0.85em;margin-left:6px;\">-${discount}%</span>`;
+                }
+                return `
+                    <li style='margin-bottom:1rem;display:flex;align-items:center;gap:10px;'>
+                        <img src="${item.img}" alt="${item.name}" style="width:40px;height:30px;object-fit:cover;vertical-align:middle;margin-right:8px;">
+                        <b>${item.name} ${badge}</b>
+                        <span>₦${item.price.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
+                        <span style="margin-left:8px;">Qty: ${item.qty}</span>
+                        <button onclick='removeFromCart("${item.id}", "${item.name.replace(/"/g, '&quot;')}", ${item.price}, "${item.img.replace(/"/g, '&quot;')}")' style='margin-left:8px;background:#ff4d4d;color:#fff;border:none;border-radius:4px;padding:0.3rem 0.8rem;font-weight:700;cursor:pointer;'>Remove</button>
+                    </li>`;
+            }).join('') + '</ul>';
+            const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+            cartTotal.textContent = 'Total: ₦' + total.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+        }
+        renderCart();
+        // Optionally, add checkout logic here
+        // --- Modal logic ---
+        function showCheckoutModal() {
+            const checkout = document.getElementById('checkout');
+            const backdrop = document.getElementById('checkout-modal-backdrop');
+            if (checkout && backdrop) {
+                checkout.classList.add('visible');
+                backdrop.classList.add('active');
+                checkout.scrollIntoView({ behavior: 'smooth' });
+            }
+            // Prefill name if available
+            var user = localStorage.getItem('ezzy_user');
+            if (user) {
+                var currentUser = JSON.parse(user);
+                document.getElementById('checkout-name').value = currentUser.name || '';
+            }
+            document.getElementById('checkout-address').value = '';
+            document.getElementById('checkout-location').value = '';
+            document.getElementById('checkout-phone').value = '';
+            document.getElementById('checkout-payment').value = '';
+            document.getElementById('payment-method-summary').style.display = 'none';
+            document.getElementById('payment-method-summary').innerHTML = '';
+        }
+        function hideCheckoutModal() {
+            const checkout = document.getElementById('checkout');
+            const backdrop = document.getElementById('checkout-modal-backdrop');
+            if (checkout && backdrop) {
+                checkout.classList.remove('visible');
+                backdrop.classList.remove('active');
+            }
+        }
+        document.getElementById('cart-checkout-btn').onclick = function(e) {
+            e.preventDefault();
+            // Check if user is logged in
+            var user = localStorage.getItem('ezzy_user');
+            if (!user) {
+                alert('You must be logged in to place an order. Please log in first.');
+                return;
+            }
+            const cart = loadCartFromStorage();
+            if (cart.length === 0) {
+                alert('Your cart is empty.');
+                return;
+            }
+            showCheckoutModal();
+        };
+        document.getElementById('checkout-modal-backdrop').onclick = hideCheckoutModal;
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') hideCheckoutModal();
+        });
+        // --- Payment Summary Display ---
+        function displayPaymentSummary() {
+            var select = document.getElementById('checkout-payment');
+            var summary = document.getElementById('payment-method-summary');
+            if (!select || !summary) return;
+            var value = select.value;
+            if (!value) { summary.style.display = 'none'; summary.innerHTML = ''; return; }
+            summary.style.display = 'block';
+            if (value === 'card') {
+                summary.innerHTML = '<b>Credit/Debit Card (Paystack):</b> You will be redirected to Paystack to complete your payment securely with your card.';
+            } else if (value === 'mobile') {
+                summary.innerHTML = '<b>Mobile Payment:</b> You will receive instructions to complete your payment using your mobile wallet.';
+            } else if (value === 'bank') {
+                summary.innerHTML = '<b>Bank Transfer:</b> Bank account details will be provided after order placement.';
+            } else if (value === 'cod') {
+                summary.innerHTML = '<b>Cash on Delivery:</b> Pay with cash when your order is delivered.';
+            }
+        }
+        document.getElementById('checkout-payment').addEventListener('change', displayPaymentSummary);
+        // --- Checkout/Paystack Integration ---
+        async function submitOrder(e) {
+            if (e) e.preventDefault();
+            var user = localStorage.getItem('ezzy_user');
+            if (!user) {
+                alert('You must be logged in to place an order. Please log in first.');
+                return false;
+            }
+            var currentUser = JSON.parse(user);
+            const cart = loadCartFromStorage();
+            if (cart.length === 0) {
+                alert('Your cart is empty.');
+                return false;
+            }
+            const name = document.getElementById('checkout-name').value.trim();
+            const address = document.getElementById('checkout-address').value.trim();
+            const location = document.getElementById('checkout-location').value.trim();
+            const phone = document.getElementById('checkout-phone').value.trim();
+            const paymentMethod = document.getElementById('checkout-payment').value;
+            if (!name || !address || !location || !phone || !paymentMethod) {
+                alert('Please fill in all fields.');
+                return false;
+            }
+            const email = currentUser.email;
+            const amount = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+            if (paymentMethod === 'card') {
+                var handler = window.PaystackPop && PaystackPop.setup ? PaystackPop.setup({
+                    key: 'pk_test_xxxxxxxxxxxxxxxxxxxxxxxx', // TODO: Replace with your public key
+                    email: email,
+                    amount: Math.round(amount * 100), // kobo
+                    currency: 'NGN',
+                    ref: 'ORD' + Math.floor(Math.random() * 1000000),
+                    metadata: {
+                        custom_fields: [
+                            { display_name: name, variable_name: 'address', value: address },
+                            { display_name: 'Precise Location', variable_name: 'location', value: location },
+                            { display_name: 'Phone', variable_name: 'phone', value: phone }
+                        ]
+                    },
+                    callback: async function(response) {
+                        const orderId = response.reference;
+                        const order = {
+                            id: orderId,
+                            status: 'Paid - Preparing for delivery',
+                            user: email,
+                            items: cart.map(item => ({ id: item.id, name: item.name, qty: item.qty, price: item.price })),
+                            address,
+                            location,
+                            phone,
+                            paymentRef: response.reference,
+                            amount
+                        };
+                        await fetch('http://localhost:3001/api/orders', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(order)
+                        });
+                        document.getElementById('order-success').innerHTML = `<strong>Order placed and paid successfully! Your Order ID is <b>${orderId}</b>. Thank you for shopping with us.</strong>`;
+                        document.getElementById('order-success').style.display = 'block';
+                        setTimeout(() => {
+                            hideCheckoutModal();
+                            document.getElementById('order-success').style.display = 'none';
+                            if (typeof removeAllFromCart === 'function') {
+                                removeAllFromCart();
+                            } else {
+                                localStorage.removeItem('ezzy_cart');
+                                renderCart();
+                            }
+                        }, 2000);
+                    },
+                    onClose: function() {
+                        alert('Payment window closed. Order not completed.');
+                    }
+                }) : null;
+                if (handler) handler.openIframe();
+                return false;
+            } else {
+                // For other payment methods, just show a success message and simulate order placement
+                const orderId = 'ORD' + Math.floor(Math.random() * 1000000);
+                const order = {
+                    id: orderId,
+                    status: paymentMethod === 'cod' ? 'Pending - Cash on Delivery' : 'Pending - Awaiting Payment',
+                    user: email,
+                    items: cart.map(item => ({ id: item.id, name: item.name, qty: item.qty, price: item.price })),
+                    address,
+                    location,
+                    phone,
+                    paymentRef: null,
+                    amount
+                };
+                await fetch('http://localhost:3001/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(order)
+                });
+                document.getElementById('order-success').innerHTML = `<strong>Order placed! Your Order ID is <b>${orderId}</b>. Thank you for shopping with us.</strong>`;
+                document.getElementById('order-success').style.display = 'block';
+                if (typeof removeAllFromCart === 'function') {
+                    removeAllFromCart();
+                } else {
+                    localStorage.removeItem('ezzy_cart');
+                    renderCart();
+                }
+                setTimeout(() => {
+                    hideCheckoutModal();
+                    document.getElementById('order-success').style.display = 'none';
+                }, 2000);
+                return false;
+            }
+        }
+        document.getElementById('checkout-form').onsubmit = submitOrder;
+        document.getElementById('clear-cart-btn').onclick = function() {
+            if (confirm('Are you sure you want to remove all products from your cart?')) {
+                if (typeof removeAllFromCart === 'function') {
+                    removeAllFromCart();
+                } else {
+                    localStorage.removeItem('ezzy_cart');
+                    if (typeof renderCart === 'function') renderCart();
+                }
+            }
+        };
+        function removeFromCart(productId, productName, productPrice, productImg) {
+            let cart = loadCartFromStorage();
+            cart = cart.filter(item =>
+                !(item.id === productId &&
+                  item.name === productName &&
+                  item.price === productPrice &&
+                  item.img === productImg)
+            );
+            localStorage.setItem('ezzy_cart', JSON.stringify(cart));
+            renderCart();
+        }
+    </script>
+</body>
+</html>

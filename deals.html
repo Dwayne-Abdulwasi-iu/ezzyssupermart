@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deals – Ezzys Supermart</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { font-family: 'Roboto', Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
+        .deals-container { max-width: 900px; margin: 3rem auto; background: #fff; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); padding: 2.5rem 2rem; }
+        .deals-header { text-align: center; margin-bottom: 2rem; }
+        .deals-list { display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; }
+        .deal-card { background: #f7f7f7; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 1.5rem; width: 260px; display: flex; flex-direction: column; align-items: center; }
+        .deal-card img { width: 120px; height: 90px; object-fit: cover; border-radius: 6px; margin-bottom: 1rem; }
+        .deal-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .deal-desc { color: #444; margin-bottom: 0.7rem; text-align: center; }
+        .deal-price { color: #2d8f3c; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .deal-old-price { color: #b00; text-decoration: line-through; margin-left: 0.5rem; font-size: 1rem; }
+        .floating-cart-btn {
+            position: fixed;
+            right: 32px;
+            bottom: 32px;
+            z-index: 1001;
+            background: #2d8f3c;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            box-shadow: 0 4px 16px rgba(45,143,60,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        .floating-cart-btn:hover {
+            background: #238f3c;
+        }
+        #floating-cart-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #ff4d4d;
+            color: #fff;
+            border-radius: 50%;
+            min-width: 22px;
+            height: 22px;
+            font-size: 1rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+            pointer-events: none;
+            line-height: 22px;
+            padding: 0 6px;
+        }
+        .back-link-top-center {
+            display: flex;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .back-link {
+            color: #2d8f3c;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="back-link-top-center">
+        <a href="ezzys.html" class="back-link">&larr; Back to Shop</a>
+    </div>
+    <div class="deals-container">
+        <div class="deals-header">
+            <h1>Today's Deals</h1>
+            <p>Special offers and discounts on select products!</p>
+        </div>
+        <div class="deals-list" id="deals-list"></div>
+    </div>
+    <script>
+    const API_BASE = 'http://localhost:3001/api';
+    async function fetchDeals() {
+        const res = await fetch(`${API_BASE}/deals`);
+        return await res.json();
+    }
+    async function renderDeals() {
+        const deals = await fetchDeals();
+        const list = document.getElementById('deals-list');
+        if (!deals.length) {
+            list.innerHTML = '<div>No deals available at the moment.</div>';
+            return;
+        }
+        list.innerHTML = deals.map((deal, idx) => `
+            <div class="deal-card">
+                <img src="${deal.img}" alt="${deal.name}">
+                <div class="deal-title">${deal.name}</div>
+                <div class="deal-desc">${deal.description || ''}</div>
+                <div class="deal-price">₦${deal.dealPrice.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}
+                    <span class="deal-old-price">₦${deal.oldPrice ? deal.oldPrice.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : ''}</span>
+                </div>
+                <button class="add-to-cart-btn" data-id="${deal.id || deal.name}" data-name="${deal.name}" data-price="${deal.dealPrice}" data-img="${deal.img}" ${deal.oldPrice ? `data-oldprice="${deal.oldPrice}"` : ''} style="margin-top:0.7rem;background:#2d8f3c;color:#fff;border:none;border-radius:4px;padding:0.5rem 1.2rem;font-weight:700;cursor:pointer;">Add to Cart</button>
+            </div>
+        `).join('');
+    }
+    renderDeals();
+
+    // --- Cart Logic for Deals Page ---
+    function loadCartFromStorage() {
+        const stored = localStorage.getItem('ezzy_cart');
+        return stored ? JSON.parse(stored) : [];
+    }
+    function saveCartToStorage(cart) {
+        localStorage.setItem('ezzy_cart', JSON.stringify(cart));
+    }
+    function addToCart(product) {
+        let cart = loadCartFromStorage();
+        const idx = cart.findIndex(item =>
+            item.id === product.id &&
+            item.name === product.name &&
+            item.price === product.price &&
+            item.img === product.img
+        );
+        // Attach deal info if present
+        if (product.oldPrice) product.deal = true;
+        if (product.oldPrice) product.oldPrice = product.oldPrice;
+        if (idx !== -1) {
+            cart[idx].qty += 1;
+        } else {
+            cart.push({ ...product, qty: 1 });
+        }
+        saveCartToStorage(cart);
+    }
+    // Delegate click for add-to-cart buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('add-to-cart-btn')) {
+            const btn = e.target;
+            const product = {
+                id: btn.getAttribute('data-id'),
+                name: btn.getAttribute('data-name'),
+                price: parseFloat(btn.getAttribute('data-price')),
+                img: btn.getAttribute('data-img'),
+                oldPrice: btn.getAttribute('data-oldprice') ? parseFloat(btn.getAttribute('data-oldprice')) : undefined
+            };
+            addToCart(product);
+            btn.textContent = 'Added!';
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.textContent = 'Add to Cart';
+                btn.disabled = false;
+            }, 1200);
+        }
+    });
+    </script>
+    <script>
+    // --- Floating Cart Icon (copied/adapted from ezzys.js) ---
+    function createFloatingCartBtn() {
+        if (document.getElementById('floating-cart-btn')) return;
+        const btn = document.createElement('button');
+        btn.id = 'floating-cart-btn';
+        btn.className = 'floating-cart-btn';
+        btn.innerHTML = '🛒';
+        btn.style.position = 'fixed';
+        btn.style.right = '32px';
+        btn.style.bottom = '32px';
+        btn.style.zIndex = '1001';
+        btn.style.background = '#2d8f3c';
+        btn.style.color = '#fff';
+        btn.style.border = 'none';
+        btn.style.borderRadius = '50%';
+        btn.style.width = '60px';
+        btn.style.height = '60px';
+        btn.style.boxShadow = '0 4px 16px rgba(45,143,60,0.15)';
+        btn.style.display = 'flex';
+        btn.style.alignItems = 'center';
+        btn.style.justifyContent = 'center';
+        btn.style.fontSize = '2.2rem';
+        btn.style.cursor = 'pointer';
+        btn.style.transition = 'background 0.2s, box-shadow 0.2s';
+        btn.onclick = function() {
+            window.location.href = 'cart.html';
+        };
+        // Badge
+        const badge = document.createElement('span');
+        badge.id = 'floating-cart-badge';
+        badge.style.position = 'absolute';
+        badge.style.top = '8px';
+        badge.style.right = '8px';
+        badge.style.background = '#ff4d4d';
+        badge.style.color = '#fff';
+        badge.style.borderRadius = '50%';
+        badge.style.minWidth = '22px';
+        badge.style.height = '22px';
+        badge.style.fontSize = '1rem';
+        badge.style.fontWeight = 'bold';
+        badge.style.display = 'flex';
+        badge.style.alignItems = 'center';
+        badge.style.justifyContent = 'center';
+        badge.style.boxShadow = '0 2px 6px rgba(0,0,0,0.12)';
+        badge.style.pointerEvents = 'none';
+        badge.style.lineHeight = '22px';
+        badge.style.padding = '0 6px';
+        btn.appendChild(badge);
+        document.body.appendChild(btn);
+    }
+    function updateCartIconBadge() {
+        let badge = document.getElementById('floating-cart-badge');
+        if (!badge) return;
+        const cart = JSON.parse(localStorage.getItem('ezzy_cart') || '[]');
+        const count = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
+        badge.textContent = count > 0 ? count : '';
+        badge.style.display = count > 0 ? 'flex' : 'none';
+    }
+    window.addEventListener('DOMContentLoaded', function() {
+        createFloatingCartBtn();
+        updateCartIconBadge();
+        setInterval(updateCartIconBadge, 200);
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ezzys Supermart – Your One-Stop Supermarket</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="ezzys.css">
+    <style>
+        /* ...existing styles... */
+        .product-catalog h2 {
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            margin-bottom: 1.2rem;
+            color: #2d8f3c;
+            /* 3D effect */
+            text-shadow: 2px 2px 0 #b2dfdb, 4px 4px 0 #388e3c, 6px 6px 8px rgba(0,0,0,0.18);
+            transform: perspective(200px) rotateX(10deg);
+            display: block;
+        }
+        .nav-links a, .nav-links .nav-link {
+            font-weight: 900;
+            font-size: 1.18rem;
+            color: #fff;
+            background: linear-gradient(90deg, #2d8f3c 60%, #43a047 100%);
+            text-shadow: 2px 2px 0 #b2dfdb, 4px 4px 0 #388e3c, 6px 6px 8px rgba(0,0,0,0.22);
+            letter-spacing: 0.7px;
+            margin-right: 1.3rem;
+            text-decoration: none;
+            transition: color 0.2s, background 0.2s, box-shadow 0.2s, text-shadow 0.2s;
+            display: inline-block;
+            position: relative;
+            border-radius: 8px;
+            padding: 0.45em 1.1em;
+            box-shadow: 0 4px 18px rgba(45,143,60,0.13), 0 1.5px 0 #388e3c;
+            border: 2.5px solid #2d8f3c;
+        }
+        .nav-links a:last-child, .nav-links .nav-link:last-child {
+            margin-right: 0;
+        }
+        .nav-links a:hover, .nav-links .nav-link:hover {
+            color: #2d8f3c;
+            background: #fff;
+            border: 2.5px solid #2d8f3c;
+            box-shadow: 0 6px 24px rgba(45,143,60,0.18);
+            text-shadow: 2px 2px 0 #b2dfdb, 4px 4px 0 #388e3c, 6px 6px 8px rgba(0,0,0,0.22);
+        }
+        /* ...existing styles... */
+    </style>
+</head>
+<body>
+    <header>
+        <div class="navbar">
+            <div class="logo">Ezzys Supermart</div>
+            <nav class="nav-links">
+                <a href="deals.html" class="nav-link">Deals</a>
+                <a href="contact.html" target="_blank" rel="noopener">Contact</a>
+                <a href="login.html" class="nav-link">Login</a>
+            </nav>
+            <div class="auth-btns">
+                <span id="navbar-username"></span>
+                <!-- Login button and link removed -->
+            </div>
+        </div>
+    </header>
+    <main>
+        <section class="hero">
+            <h1>Your One-Stop Supermarket</h1>
+            <p>Shop groceries, fresh produce, household essentials, and more – delivered to your door!</p>
+           
+        </section>
+        <section class="categories" id="categories">
+            <div class="category-card">Groceries</div>
+            <div class="category-card">Fresh Produce</div>
+            <div class="category-card">Beverages</div>
+            <div class="category-card">Personal Care</div>
+            <div class="category-card">Household</div>
+            <div class="category-card">Snacks</div>
+        </section>
+        
+        <section class="product-catalog" id="catalog">
+            <h2>Product Catalog</h2>
+            <div class="catalog-controls">
+                <input type="text" id="catalog-search" placeholder="Search products...">
+                <select id="sort-select" title="Sort products">
+                    <option value="default">Sort By</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                    <option value="best">Best Selling</option>
+                </select>
+                <select id="filter-category" title="Filter by category">
+                    <option value="all">All Categories</option>
+                    <option value="groceries">Groceries</option>
+                    <option value="produce">Fresh Produce</option>
+                    <option value="beverages">Beverages</option>
+                    <option value="personal">Personal Care</option>
+                    <option value="household">Household</option>
+                    <option value="snacks">Snacks</option>
+                </select>
+            </div>
+            <div class="products-grid" id="catalog-products">
+                <!-- Products will be dynamically loaded from backend via JS -->
+            </div>
+        </section>
+        <div class="checkout-modal-backdrop" id="checkout-modal-backdrop"></div>
+        <section class="checkout checkout-section" id="checkout">
+            <h2>Checkout</h2>
+            <form id="checkout-form" onsubmit="return submitOrder(event)">
+                <input type="text" id="checkout-name" placeholder="Full Name" required><br><br>
+                <input type="text" id="checkout-address" placeholder="Delivery Address" required><br><br>
+                <input type="text" id="checkout-location" placeholder="Precise Location (e.g. GPS, landmark, etc.)" required><br><br>
+                <input type="tel" id="checkout-phone" placeholder="Phone Number" required><br><br>
+                <label for="checkout-payment">Payment Method</label>
+                <select id="checkout-payment" required>
+                    <option value="">Select Payment Method</option>
+                    <option value="card">Credit/Debit Card</option>
+                    <option value="mobile">Mobile Payment</option>
+                    <option value="bank">Bank Transfer</option>
+                    <option value="cod">Cash on Delivery</option>
+                </select><br><br>
+                <div id="payment-method-summary"></div>
+                <button type="submit">Place Order</button>
+            </form>
+            <div id="order-success" class="order-success">
+                <strong>Order placed successfully! Thank you for shopping with us.</strong>
+            </div>
+        </section>
+       
+        <section class="shopping-cart" id="shopping-cart-section">
+            <div class="cart-content" id="cart-content">
+                <div id="cart-items-list"></div>
+                <div class="cart-summary-panel">
+                    <div id="cart-total"></div>
+                    <button id="cart-checkout-btn">Checkout</button>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer class="main-footer">
+        &copy; 2025 Ezzys Supermart. All rights reserved.
+    </footer>
+    <!-- Modal Backdrop and Modals -->
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <script>
+        // Show a welcome message if user just logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            if (localStorage.getItem('ezzy_logged_in') === '1') {
+                localStorage.removeItem('ezzy_logged_in');
+                alert('Welcome! You have successfully logged in.');
+            }
+            // Display username in navbar if logged in
+            var user = localStorage.getItem('ezzy_user');
+            var navbarUsername = document.getElementById('navbar-username');
+            if (user && navbarUsername) {
+                try {
+                    var userObj = JSON.parse(user);
+                    if (userObj && userObj.name) {
+                        navbarUsername.textContent = 'Hi, ' + userObj.name;
+                    }
+                } catch (e) {}
+            }
+        });
+    </script>
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <script src="ezzys.js"></script>
+</body>
+</html>
