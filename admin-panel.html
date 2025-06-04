@@ -97,7 +97,7 @@
     <div class="admin-section">
         <div class="admin-tabs">
             <button class="admin-tab-btn" id="tab-inventory" data-tab="inventory">Inventory</button>
-            <button class="admin-tab-btn" id="tab-orders" data-tab="orders">Orders</button>
+            <button class="admin-tab-btn" id="tab-orders" data-tab="orders">Orders <span id="pending-orders-count" style="background:#b00;color:#fff;border-radius:50%;padding:0 0.5em;font-size:0.95em;margin-left:0.4em;display:none;"></span></button>
             <button class="admin-tab-btn" id="tab-customers" data-tab="customers">Customers</button>
             <button class="admin-tab-btn" id="tab-accepted-orders" data-tab="accepted-orders">Accepted Orders</button>
             <button class="admin-tab-btn" id="tab-deals" data-tab="deals">Deals</button>
@@ -163,7 +163,7 @@
         </div>
     </div>
     <script>
-    const API_BASE = 'http://localhost:3001/api';
+    const API_BASE = 'http://192.168.1.245:3001/api';
     async function fetchProducts() {
         const res = await fetch(`${API_BASE}/products`);
         return await res.json();
@@ -292,6 +292,7 @@
             </div>
             `;
         }).join('');
+        await updatePendingOrdersCount();
     }
     // --- Customer Management ---
     async function fetchCustomers() {
@@ -363,6 +364,19 @@
             msgError.style.display = 'block';
         }
     };
+    async function updatePendingOrdersCount() {
+        try {
+            const orders = await fetchOrders();
+            const pending = orders.filter(o => o.status && o.status.toLowerCase().includes('pending'));
+            const badge = document.getElementById('pending-orders-count');
+            if (pending.length > 0) {
+                badge.textContent = pending.length;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        } catch {}
+    }
     // --- Accept Order Functionality ---
     async function acceptOrder(orderId) {
         if (!orderId) return;
@@ -376,6 +390,7 @@
                 alert('Order placed successfully. Customer will be notified by email.');
                 renderOrdersList();
                 renderAcceptedOrdersList(); // Refresh accepted orders tab
+                updatePendingOrdersCount();
             } else {
                 // Try to parse backend error for more info
                 let msg = 'Failed to accept order.';
@@ -386,11 +401,13 @@
                 alert('Order placed successfully. Customer will be notified by email.');
                 renderOrdersList();
                 renderAcceptedOrdersList();
+                updatePendingOrdersCount();
             }
         } catch (err) {
             alert('Order placed successfully. Customer will be notified by email.');
             renderOrdersList();
             renderAcceptedOrdersList();
+            updatePendingOrdersCount();
         }
     }
     // --- Decline Order Functionality ---
@@ -406,6 +423,7 @@
                 alert('Order declined successfully. Customer will be notified by email.');
                 renderOrdersList();
                 renderDeclinedOrdersList();
+                updatePendingOrdersCount();
             } else {
                 // Try to parse backend error for more info
                 let msg = 'Order declined successfully. Customer will be notified by email.';
@@ -416,11 +434,13 @@
                 alert(msg);
                 renderOrdersList();
                 renderDeclinedOrdersList();
+                updatePendingOrdersCount();
             }
         } catch (err) {
             alert('Order declined successfully. Customer will be notified by email.');
             renderOrdersList();
             renderDeclinedOrdersList();
+            updatePendingOrdersCount();
         }
     }
     // --- Accepted Orders Management ---
@@ -620,6 +640,7 @@
     document.getElementById('tab-inventory').classList.add('active');
     // Initial render
     renderProductList();
+    updatePendingOrdersCount();
     </script>
 </body>
 </html>
