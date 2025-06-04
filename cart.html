@@ -134,7 +134,7 @@
         <div id="cart-items-list"></div>
         <div id="cart-total"></div>
         <button id="cart-checkout-btn">Checkout</button>
-        <button id="clear-cart-btn" style="background:#ff4d4d;color:#fff;border:none;border-radius:6px;padding:0.7rem 1.5rem;font-size:1rem;font-weight:700;cursor:pointer;width:100%;margin-top:0.7rem;">Clear Cart</button>
+        <button id="clear-cart-btn" class="clear-cart-btn">Clear Cart</button>
     </div>
     <!-- Modal Backdrop and Modals -->
     <div class="checkout-modal-backdrop" id="checkout-modal-backdrop"></div>
@@ -148,13 +148,11 @@
             <label for="checkout-payment">Payment Method</label>
             <select id="checkout-payment" required>
                 <option value="">Select Payment Method</option>
-                <option value="card">Credit/Debit Card</option>
-                <option value="mobile">Mobile Payment</option>
                 <option value="bank">Bank Transfer</option>
                 <option value="cod">Cash on Delivery</option>
             </select><br><br>
             <div id="payment-method-summary"></div>
-            <button type="submit">Place Order</button>
+            <button type="submit" class="place-order-btn">Place Order</button>
         </form>
         <div id="order-success" class="order-success">
             <strong>Order placed successfully! Thank you for shopping with us.</strong>
@@ -177,21 +175,21 @@
                 cartTotal.textContent = '';
                 return;
             }
-            cartItemsList.innerHTML = '<ul style="list-style:none;padding:0;">' + cart.map(item => {
-                let badge = '';
-                if (item.deal && item.oldPrice && item.oldPrice > item.price) {
-                    const discount = Math.round(100 * (item.oldPrice - item.price) / item.oldPrice);
-                    badge = `<span style=\"background:#ffb300;color:#fff;padding:2px 7px;border-radius:4px;font-size:0.85em;margin-left:6px;\">-${discount}%</span>`;
-                }
-                return `
-                    <li style='margin-bottom:1rem;display:flex;align-items:center;gap:10px;'>
-                        <img src="${item.img}" alt="${item.name}" style="width:40px;height:30px;object-fit:cover;vertical-align:middle;margin-right:8px;">
-                        <b>${item.name} ${badge}</b>
-                        <span>₦${item.price.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
-                        <span style="margin-left:8px;">Qty: ${item.qty}</span>
-                        <button onclick='removeFromCart("${item.id}", "${item.name.replace(/"/g, '&quot;')}", ${item.price}, "${item.img.replace(/"/g, '&quot;')}")' style='margin-left:8px;background:#ff4d4d;color:#fff;border:none;border-radius:4px;padding:0.3rem 0.8rem;font-weight:700;cursor:pointer;'>Remove</button>
-                    </li>`;
-            }).join('') + '</ul>';
+            cartItemsList.innerHTML = '<ul class="cart-items-ul">' + cart.map(item => {
+                            let badge = '';
+                            if (item.deal && item.oldPrice && item.oldPrice > item.price) {
+                                const discount = Math.round(100 * (item.oldPrice - item.price) / item.oldPrice);
+                                badge = `<span class="cart-discount-badge">-${discount}%</span>`;
+                            }
+                            return `
+                                <li class="cart-item-li">
+                                    <img src="${item.img}" alt="${item.name}" class="cart-item-img">
+                                    <b>${item.name} ${badge}</b>
+                                    <span>₦${item.price.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
+                                    <span class="cart-item-qty">Qty: ${item.qty}</span>
+                                    <button onclick='removeFromCart("${item.id}", "${item.name.replace(/"/g, '&quot;')}", ${item.price}, "${item.img.replace(/"/g, '&quot;')}")' class="remove-cart-btn">Remove</button>
+                                </li>`;
+                        }).join('') + '</ul>';
             const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
             cartTotal.textContent = 'Total: ₦' + total.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
         }
@@ -353,7 +351,8 @@
                     location,
                     phone,
                     paymentRef: null,
-                    amount
+                    amount,
+                    paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod // Show 'Cash on Delivery' for cod
                 };
                 await fetch('http://localhost:3001/api/orders', {
                     method: 'POST',

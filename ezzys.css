@@ -659,6 +659,14 @@ header {
 #cart-checkout-btn:hover {
     background: #256f2e;
 }
+#deal-search {
+    margin-bottom: 1rem;
+    padding: 0.5rem 1rem;
+    width: 100%;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
 @media (max-width: 600px) {
     #shopping-cart-section {
         min-width: 95vw !important;

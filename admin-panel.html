@@ -158,6 +158,7 @@
                 <button type="submit">Post Deal</button>
             </form>
             <h3>Current Deals</h3>
+            <input type="text" id="deal-search" placeholder="Search deals...">
             <ul id="deal-list"></ul>
         </div>
     </div>
@@ -279,6 +280,7 @@
                 <div><b>Address:</b> ${order.address || ''}</div>
                 <div><b>Phone:</b> ${order.phone || ''}</div>
                 <div><b>Status:</b> ${order.status || ''}</div>
+                <div><b>Payment Method:</b> ${order.paymentMethod || ''}</div>
                 <div><b>Payment Ref:</b> ${order.paymentRef || ''}</div>
                 <div><b>Amount:</b> ₦${order.amount ? order.amount.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : ''}</div>
                 <div><b>Items:</b>
@@ -445,6 +447,7 @@
                 <div><b>Address:</b> ${order.address || ''}</div>
                 <div><b>Phone:</b> ${order.phone || ''}</div>
                 <div><b>Status:</b> ${order.status || ''}</div>
+                <div><b>Payment Method:</b> ${order.paymentMethod || ''}</div>
                 <div><b>Payment Ref:</b> ${order.paymentRef || ''}</div>
                 <div><b>Amount:</b> ₦${order.amount ? order.amount.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : ''}</div>
                 <div><b>Items:</b>
@@ -490,6 +493,7 @@
                 <div><b>Address:</b> ${order.address || ''}</div>
                 <div><b>Phone:</b> ${order.phone || ''}</div>
                 <div><b>Status:</b> ${order.status || ''}</div>
+                <div><b>Payment Method:</b> ${order.paymentMethod || ''}</div>
                 <div><b>Payment Ref:</b> ${order.paymentRef || ''}</div>
                 <div><b>Amount:</b> ₦${order.amount ? order.amount.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : ''}</div>
                 <div><b>Items:</b>
@@ -509,12 +513,21 @@
     async function renderDealList() {
         const deals = await fetchDeals();
         const list = document.getElementById('deal-list');
+        const searchInput = document.getElementById('deal-search');
+        let filtered = deals;
+        if (searchInput && searchInput.value.trim() !== '') {
+            const q = searchInput.value.trim().toLowerCase();
+            filtered = deals.filter(d =>
+                (d.name && d.name.toLowerCase().includes(q)) ||
+                (d.description && d.description.toLowerCase().includes(q))
+            );
+        }
         if (!list) return;
-        if (!deals.length) {
+        if (!filtered.length) {
             list.innerHTML = '<li>No deals posted.</li>';
             return;
         }
-        list.innerHTML = deals.map((d, idx) => `
+        list.innerHTML = filtered.map((d, idx) => `
             <li>
                 <img src="${d.img}" alt="" style="width:40px;height:30px;object-fit:cover;border-radius:4px;"> <strong>${d.name}</strong> - ₦${d.dealPrice.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}
                 ${d.oldPrice ? `<span style='color:#b00;text-decoration:line-through;margin-left:0.5em;'>₦${d.oldPrice.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</span>` : ''}
@@ -575,6 +588,7 @@
     document.getElementById('admin-search').addEventListener('input', renderProductList);
     document.getElementById('order-search').addEventListener('input', renderOrdersList);
     document.getElementById('customer-search').addEventListener('input', renderCustomersList);
+    document.getElementById('deal-search').addEventListener('input', renderDealList);
     // Tab switching logic
     document.querySelectorAll('.admin-tab-btn').forEach(btn => {
         btn.addEventListener('click', function() {
