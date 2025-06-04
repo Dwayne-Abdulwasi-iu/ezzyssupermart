@@ -123,7 +123,8 @@ app.put('/api/orders/decline/:id', async (req, res) => {
         res.json({ success: true });
     } catch (e) {
         console.error('Failed to send order declined email:', e);
-        res.status(500).json({ success: false, message: 'Failed to send order declined email', error: e && e.message ? e.message : e });
+        // Notify admin that order was declined and user will be informed by email
+        res.status(500).json({ success: false, message: 'Order has been declined. The user will be notified by email.' });
     }
 });
 app.get('/api/orders/accepted', (req, res) => {

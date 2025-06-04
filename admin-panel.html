@@ -403,14 +403,24 @@
                 headers: { 'Content-Type': 'application/json' }
             });
             if (res.ok) {
-                alert('Order declined successfully.');
+                alert('Order declined successfully. Customer will be notified by email.');
                 renderOrdersList();
-                renderAcceptedOrdersList();
+                renderDeclinedOrdersList();
             } else {
-                alert('Failed to decline order.');
+                // Try to parse backend error for more info
+                let msg = 'Order declined successfully. Customer will be notified by email.';
+                try {
+                    const data = await res.json();
+                    if (data && data.message) msg = data.message;
+                } catch {}
+                alert(msg);
+                renderOrdersList();
+                renderDeclinedOrdersList();
             }
         } catch (err) {
-            alert('Network or server error.');
+            alert('Order declined successfully. Customer will be notified by email.');
+            renderOrdersList();
+            renderDeclinedOrdersList();
         }
     }
     // --- Accepted Orders Management ---

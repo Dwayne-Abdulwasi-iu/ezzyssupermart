@@ -39,8 +39,26 @@ async function renderCatalogProducts() {
     // Get selected category filter
     const filter = document.getElementById('filter-category');
     const selectedCategory = filter ? filter.value : 'all';
-    products.forEach(p => {
-        if (selectedCategory !== 'all' && p.category !== selectedCategory) return;
+    // Get search query
+    const searchInput = document.getElementById('catalog-search');
+    const searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    // Filter products by category and search query
+    let filteredProducts = products;
+    if (selectedCategory !== 'all') {
+        filteredProducts = filteredProducts.filter(p => p.category === selectedCategory);
+    }
+    if (searchQuery) {
+        filteredProducts = filteredProducts.filter(p => p.name && p.name.toLowerCase().includes(searchQuery));
+    }
+    // Sort products by selected sort option
+    const sortSelect = document.getElementById('sort-select');
+    const sortValue = sortSelect ? sortSelect.value : 'default';
+    if (sortValue === 'price-asc') {
+        filteredProducts = filteredProducts.slice().sort((a, b) => a.price - b.price);
+    } else if (sortValue === 'price-desc') {
+        filteredProducts = filteredProducts.slice().sort((a, b) => b.price - a.price);
+    }
+    filteredProducts.forEach(p => {
         const div = document.createElement('div');
         div.className = 'product-card';
         div.innerHTML = `<img src="${p.img}" alt="${p.name}"><h3>${p.name}</h3><p>₦${p.price.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</p><small style='color:#888;'>${p.category ? p.category.charAt(0).toUpperCase() + p.category.slice(1) : ''}</small><br><button class='add-to-cart-btn' data-id='${p.id}' data-name='${p.name}' data-price='${p.price}' data-img='${p.img}' style='margin-top:0.7rem;background:#2d8f3c;color:#fff;border:none;border-radius:4px;padding:0.5rem 1.2rem;font-weight:700;cursor:pointer;'>Add to Cart</button>`;
@@ -214,6 +232,11 @@ document.addEventListener('DOMContentLoaded', function() {
     var paymentSelect = document.getElementById('checkout-payment');
     if (paymentSelect) {
         paymentSelect.addEventListener('change', displayPaymentSummary);
+    }
+    // Add event listener for sort select
+    const sortSelect = document.getElementById('sort-select');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', renderCatalogProducts);
     }
 });
 // --- Cart Logic ---
