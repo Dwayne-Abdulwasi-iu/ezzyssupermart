@@ -105,12 +105,13 @@
             </div>
         </div>
         <div class="deals-list" id="deals-list"></div>
-    </div>
-    <script>
-    const API_BASE = 'http://localhost:3001/api';
+    </div>    <script>
+    // Use API_BASE and DEALS_API_BASE from ezzys.js if already defined
+    window.API_BASE = window.API_BASE || 'http://192.168.1.245:3001/api';
+    window.DEALS_API_BASE = window.DEALS_API_BASE || 'http://192.168.1.245:3002/api';
     let allDeals = [];
     async function fetchDeals() {
-        const res = await fetch(`${API_BASE}/deals`);
+        const res = await fetch(`${DEALS_API_BASE}/deals`);
         return await res.json();
     }
     async function renderDeals() {

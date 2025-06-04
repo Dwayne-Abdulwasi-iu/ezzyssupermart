@@ -1,6 +1,13 @@
 // ezzys.js - All JavaScript from ezzys.html moved here
 
-const API_BASE = 'http://localhost:3001/api';
+if (typeof window.API_BASE === 'undefined') {
+    window.API_BASE = 'http://192.168.1.245:3001/api';
+}
+if (typeof window.DEALS_API_BASE === 'undefined') {
+    window.DEALS_API_BASE = 'http://192.168.1.245:3002/api';
+}
+const API_BASE = window.API_BASE;
+const DEALS_API_BASE = window.DEALS_API_BASE;
 let currentUser = null;
 let products = [];
 
@@ -80,6 +87,7 @@ async function renderFeaturedProducts() {
 }
 // On page load, restore cart
 window.addEventListener('DOMContentLoaded', function() {
+    renderCatalogProducts();
     loadCartFromStorage();
     renderCart();
 });
@@ -346,6 +354,7 @@ function decreaseQty(productId, productName, productPrice, productImg) {
     }
 }
 document.addEventListener('DOMContentLoaded', function() {
+    renderCatalogProducts();
     loadCartFromStorage();
     renderCart();
     document.getElementById('catalog-products').addEventListener('click', function(e) {

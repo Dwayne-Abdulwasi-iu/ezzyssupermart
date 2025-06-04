@@ -1,53 +1,62 @@
 [
   {
+    "id": 1,
     "name": "apple",
     "price": 500,
     "img": "apple.jpg",
     "category": "groceries"
   },
   {
+    "id": 2,
     "name": "Laundry Detergent",
     "price": 700,
     "img": "apple.jpg",
     "category": "household"
   },
   {
+    "id": 3,
     "name": "apple",
     "price": 700,
     "img": "apple.jpg",
     "category": "produce"
   },
   {
+    "id": 4,
     "name": "Premium Rice (5kg)",
     "price": 25000,
     "img": "apple.jpg",
     "category": "groceries"
   },
   {
+    "id": 5,
     "name": "cream",
     "price": 500,
     "img": "apple.jpg",
     "category": "personal"
   },
   {
+    "id": 6,
     "name": "apple",
     "price": 900,
     "img": "apple.jpg",
     "category": "produce"
   },
   {
+    "id": 7,
     "name": "cake",
     "price": 700,
     "img": "apple.jpg",
-    "category": "groceries"
+    "category": "snacks"
   },
   {
+    "id": 8,
     "name": "apple",
     "price": 700,
     "img": "apple.jpg",
     "category": "produce"
   },
   {
+    "id": 9,
     "name": "apple",
     "price": 600,
     "img": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80",

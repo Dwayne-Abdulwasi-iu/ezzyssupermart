@@ -161,9 +161,8 @@
             <input type="text" id="deal-search" placeholder="Search deals...">
             <ul id="deal-list"></ul>
         </div>
-    </div>
-    <script>
-    const API_BASE = 'http://192.168.1.245:3001/api';
+    </div>    <script>
+    window.API_BASE = window.API_BASE || 'http://192.168.1.245:3001/api';
     async function fetchProducts() {
         const res = await fetch(`${API_BASE}/products`);
         return await res.json();
