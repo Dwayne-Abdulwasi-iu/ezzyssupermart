@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ezzys Supermart – Welcome</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="ezzys.css">
+    <style>
+        body { background: #f5fff7; font-family: 'Roboto', Arial, sans-serif; }
+        .index-container { max-width: 500px; margin: 7vh auto; background: #fff; border-radius: 18px; box-shadow: 0 6px 32px rgba(45,143,60,0.13); padding: 2.5rem 2rem 2.5rem 2rem; text-align: center; }
+        .index-title { font-size: 2.3rem; font-weight: 900; color: #2d8f3c; margin-bottom: 0.7em; letter-spacing: 1px; }
+        .index-desc { font-size: 1.15rem; color: #388e3c; margin-bottom: 2.2em; }
+        .index-links { display: flex; flex-direction: column; gap: 1.2em; }
+        .index-link-btn { background: linear-gradient(90deg, #2d8f3c 60%, #43a047 100%); color: #fff; font-size: 1.18rem; font-weight: 900; border: none; border-radius: 8px; padding: 0.9em 0; text-decoration: none; box-shadow: 0 4px 18px rgba(45,143,60,0.13), 0 1.5px 0 #388e3c; transition: background 0.2s, color 0.2s, box-shadow 0.2s; }
+        .index-link-btn:hover { background: #fff; color: #2d8f3c; border: 2.5px solid #2d8f3c; box-shadow: 0 6px 24px rgba(45,143,60,0.18); }
+        .index-footer { margin-top: 2.5em; color: #388e3c; font-size: 0.98rem; }
+    </style>
+</head>
+<body>
+    <div class="index-container">
+        <div class="index-title">Welcome to Ezzys Supermart</div>
+        <div class="index-desc">Your one-stop shop for groceries, fresh produce, household essentials, and more.<br>Manage your store or start shopping below!</div>
+        <div class="index-links">
+            <a href="ezzys.html" class="index-link-btn">Go to Shop</a>
+            <a href="#" class="index-link-btn" id="admin-link">Admin Panel</a>
+        </div>
+        <div class="index-footer">&copy; 2025 Ezzys Supermart. All rights reserved.</div>
+    </div>
+    <script>
+        document.getElementById('admin-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            // Step 1: Ask for admin email
+            var emailInput = document.createElement('input');
+            emailInput.type = 'email';
+            emailInput.placeholder = 'Enter admin email';
+            emailInput.style = 'width: 90%; padding: 0.7em; margin: 1em 0; border-radius: 6px; border: 1.5px solid #b2dfdb; font-size: 1.1em;';
+            var modal = document.createElement('div');
+            modal.style = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.18); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+            var box = document.createElement('div');
+            box.style = 'background: #fff; padding: 2em 2em 1.5em 2em; border-radius: 12px; box-shadow: 0 4px 24px rgba(45,143,60,0.13); text-align: center; min-width: 260px;';
+            var label = document.createElement('div');
+            label.textContent = 'Admin Email:';
+            label.style = 'font-weight: bold; margin-bottom: 0.7em; color: #2d8f3c;';
+            var btn = document.createElement('button');
+            btn.textContent = 'Send Code';
+            btn.style = 'background: #2d8f3c; color: #fff; border: none; border-radius: 6px; padding: 0.6em 2em; font-weight: 700; font-size: 1.1em; margin-top: 1em; cursor: pointer;';
+            var cancel = document.createElement('button');
+            cancel.textContent = 'Cancel';
+            cancel.style = 'background: #b2dfdb; color: #2d8f3c; border: none; border-radius: 6px; padding: 0.6em 1.5em; font-weight: 700; font-size: 1.1em; margin-top: 1em; margin-left: 1em; cursor: pointer;';
+            box.appendChild(label);
+            box.appendChild(emailInput);
+            box.appendChild(btn);
+            box.appendChild(cancel);
+            modal.appendChild(box);
+            document.body.appendChild(modal);
+            emailInput.focus();
+            cancel.onclick = function() { document.body.removeChild(modal); };
+            emailInput.addEventListener('keydown', function(ev) {
+                if (ev.key === 'Enter') btn.click();
+                if (ev.key === 'Escape') cancel.click();
+            });
+            btn.onclick = function() {
+                var email = emailInput.value.trim();
+                if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+                    alert('Please enter a valid email.');
+                    return;
+                }
+                btn.disabled = true;
+                btn.textContent = 'Sending...';
+                fetch('/api/admin-send-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    btn.disabled = false;
+                    btn.textContent = 'Send Code';
+                    if (!data.success) {
+                        alert('Failed to send code: ' + (data.message || ''));
+                        return;
+                    }
+                    // Step 3: Ask for code
+                    box.innerHTML = '';
+                    var codeLabel = document.createElement('div');
+                    codeLabel.textContent = 'Enter Verification Code:';
+                    codeLabel.style = 'font-weight: bold; margin-bottom: 0.7em; color: #2d8f3c;';
+                    var codeInput = document.createElement('input');
+                    codeInput.type = 'text';
+                    codeInput.placeholder = '6-digit code';
+                    codeInput.style = 'width: 90%; padding: 0.7em; margin: 1em 0; border-radius: 6px; border: 1.5px solid #b2dfdb; font-size: 1.1em;';
+                    var submitBtn = document.createElement('button');
+                    submitBtn.textContent = 'Verify';
+                    submitBtn.style = 'background: #2d8f3c; color: #fff; border: none; border-radius: 6px; padding: 0.6em 2em; font-weight: 700; font-size: 1.1em; margin-top: 1em; cursor: pointer;';
+                    var cancel2 = document.createElement('button');
+                    cancel2.textContent = 'Cancel';
+                    cancel2.style = 'background: #b2dfdb; color: #2d8f3c; border: none; border-radius: 6px; padding: 0.6em 1.5em; font-weight: 700; font-size: 1.1em; margin-top: 1em; margin-left: 1em; cursor: pointer;';
+                    box.appendChild(codeLabel);
+                    box.appendChild(codeInput);
+                    box.appendChild(submitBtn);
+                    box.appendChild(cancel2);
+                    codeInput.focus();
+                    cancel2.onclick = function() { document.body.removeChild(modal); };
+                    codeInput.addEventListener('keydown', function(ev) {
+                        if (ev.key === 'Enter') submitBtn.click();
+                        if (ev.key === 'Escape') cancel2.click();
+                    });
+                    submitBtn.onclick = function() {
+                        submitBtn.disabled = true;
+                        submitBtn.textContent = 'Verifying...';
+                        fetch('/api/admin-verify-code', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ code: codeInput.value.trim() })
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = 'Verify';
+                            if (data.success) {
+                                document.body.removeChild(modal);
+                                window.location.href = 'admin-panel.html';
+                            } else {
+                                alert(data.message || 'Incorrect code.');
+                                codeInput.value = '';
+                            }
+                        })
+                        .catch(() => {
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = 'Verify';
+                            alert('Failed to verify code.');
+                        });
+                    };
+                })
+                .catch(() => {
+                    btn.disabled = false;
+                    btn.textContent = 'Send Code';
+                    alert('Failed to send code.');
+                });
+            };
+        });
+    </script>
+</body>
+</html>

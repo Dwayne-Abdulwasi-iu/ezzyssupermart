@@ -277,3 +277,53 @@ body {
     transform: translateY(1px);
     box-shadow: 0 1px 2px rgba(22, 22, 22, 0.13);
 }
+.forgot-password-link-container {
+    text-align: center;
+    margin-top: 1em;
+}
+.forgot-password-link {
+    color: #2d8f3c;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+}
+.forgot-password-modal {
+    display: none;
+    max-width: 350px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 18px rgba(45,143,60,0.13);
+    padding: 2em 1.5em 1.5em 1.5em;
+    text-align: center;
+    position: relative;
+}
+.forgot-password-modal.active {
+    display: block;
+}
+#reset-code-section {
+    display: none;
+    margin-top: 1em;
+}
+#reset-code-section.active {
+    display: block;
+}
+#forgot-password-msg {
+    margin-top: 1em;
+    color: #2d8f3c;
+    font-weight: 600;
+}
+#close-forgot-modal {
+    margin-top: 1em;
+    background: #b2dfdb;
+    color: #2d8f3c;
+    border: none;
+    border-radius: 6px;
+    padding: 0.6em 1.5em;
+    font-weight: 700;
+    font-size: 1.1em;
+    cursor: pointer;
+}
+#forgot-email, #reset-code, #reset-new-password {
+    margin-bottom: 0.5em;
+}

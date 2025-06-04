@@ -205,7 +205,7 @@ app.use(express.static(__dirname));
 
 // --- Email sending utility (using nodemailer) ---
 const EMAIL_FROM = 'ezzyssupermart@gmail.com'; // Change to your sender email
-const EMAIL_PASS = 'beyq otur bqav fenp'; // Use an app password or env var
+const EMAIL_PASS = 'qezeifhcrwravhti'; // Use an app password or env var
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -294,6 +294,100 @@ app.post('/api/contact', (req, res) => {
     const messages = readContactMessages();
     messages.push({ name, email, message, created: Date.now() });
     writeContactMessages(messages);
+    res.json({ success: true });
+});
+
+// --- Admin Email Verification ---
+const adminCodeStore = { code: null, expires: null };
+app.post('/api/admin-send-code', async (req, res) => {
+    const { email } = req.body;
+    if (email !== 'ezzyssupermart@gmail.com') {
+        return res.status(403).json({ success: false, message: 'Unauthorized email.' });
+    }
+    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        return res.status(400).json({ success: false, message: 'Invalid email.' });
+    }
+    // Generate a 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    adminCodeStore.code = code;
+    adminCodeStore.expires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    try {
+        await transporter.sendMail({
+            from: EMAIL_FROM,
+            to: email,
+            subject: 'Your Ezzys Supermart Admin Login Code',
+            html: `<h2>Your Admin Login Code</h2><p>Your verification code is: <b>${code}</b></p><p>This code will expire in 10 minutes.</p>`
+        });
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ success: false, message: 'Failed to send email', error: e && e.message ? e.message : e });
+    }
+});
+app.post('/api/admin-verify-code', (req, res) => {
+    const { code } = req.body;
+    if (!adminCodeStore.code || !adminCodeStore.expires || Date.now() > adminCodeStore.expires) {
+        return res.status(400).json({ success: false, message: 'Code expired. Please request a new code.' });
+    }
+    if (code === adminCodeStore.code) {
+        adminCodeStore.code = null;
+        adminCodeStore.expires = null;
+        return res.json({ success: true });
+    } else {
+        return res.status(401).json({ success: false, message: 'Incorrect code.' });
+    }
+});
+
+// --- Password Reset (Forgot Password) ---
+const passwordResetCodes = {};
+
+app.post('/api/request-password-reset', async (req, res) => {
+    const { email } = req.body;
+    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        return res.status(400).json({ success: false, message: 'Invalid email.' });
+    }
+    const users = readUsers();
+    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (!user) {
+        // For security, do not reveal if email exists
+        return res.json({ success: true });
+    }
+    // Generate a 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    passwordResetCodes[email.toLowerCase()] = {
+        code,
+        expires: Date.now() + 15 * 60 * 1000 // 15 minutes
+    };
+    try {
+        await transporter.sendMail({
+            from: EMAIL_FROM,
+            to: email,
+            subject: 'Your Ezzys Supermart Password Reset Code',
+            html: `<h2>Password Reset Code</h2><p>Your code is: <b>${code}</b></p><p>This code will expire in 15 minutes.</p>`
+        });
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ success: false, message: 'Failed to send reset code', error: e && e.message ? e.message : e });
+    }
+});
+
+app.post('/api/reset-password', (req, res) => {
+    const { email, code, newPassword } = req.body;
+    if (!email || !code || !newPassword) {
+        return res.status(400).json({ success: false, message: 'Missing required fields.' });
+    }
+    const entry = passwordResetCodes[email.toLowerCase()];
+    if (!entry || entry.code !== code || Date.now() > entry.expires) {
+        return res.status(400).json({ success: false, message: 'Invalid or expired code.' });
+    }
+    // Update password
+    const users = readUsers();
+    const idx = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
+    if (idx === -1) {
+        return res.status(400).json({ success: false, message: 'User not found.' });
+    }
+    users[idx].password = newPassword;
+    writeUsers(users);
+    delete passwordResetCodes[email.toLowerCase()];
     res.json({ success: true });
 });
 

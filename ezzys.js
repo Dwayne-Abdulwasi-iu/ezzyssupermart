@@ -204,17 +204,10 @@ async function submitOrder(e) {
 }
 // Cart Icon in Navbar (moved from inline script)
 document.addEventListener('DOMContentLoaded', function() {
-    // Add cart icon to navbar if not present
-    if (!document.getElementById('cart-navbar-icon-link')) {
-        const navbar = document.querySelector('.navbar');
-        if (navbar) {
-            const cartLink = document.createElement('a');
-            cartLink.href = 'javascript:void(0)';
-            cartLink.className = 'cart-navbar-icon-link';
-            cartLink.id = 'cart-navbar-icon-link';
-            cartLink.innerHTML = `<span class="cart-navbar-icon" style="font-size:2.1rem;">🛒</span><span id="cart-navbar-badge" style="display:none;position:absolute;top:-8px;right:-12px;background:#ff4d4d;color:#fff;border-radius:50%;min-width:22px;height:22px;font-size:1rem;font-weight:bold;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.12);pointer-events:none;line-height:22px;text-align:center;padding:0 6px;">0</span>`;
-            navbar.appendChild(cartLink);
-        }
+    // Remove cart icon from navbar if present
+    var cartIcon = document.getElementById('cart-navbar-icon-link');
+    if (cartIcon) {
+        cartIcon.remove();
     }
     // Auto-update product catalog every 1 second (1000ms)
     setInterval(renderCatalogProducts, 1000);
