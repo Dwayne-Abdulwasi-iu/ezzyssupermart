@@ -392,6 +392,6 @@ app.post('/api/reset-password', (req, res) => {
     res.json({ success: true });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log('Main backend running on port', PORT);
 });

@@ -54,6 +54,6 @@ app.delete('/api/deals/:idx', (req, res) => {
 // --- (Optional) Serve static files for frontend ---
 app.use(express.static(__dirname));
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log('Deals backend running on port', PORT);
 });

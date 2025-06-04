@@ -594,7 +594,7 @@
         const deal = { name, description, dealPrice, oldPrice, img };
         try {
             // Directly post to deals backend
-            const res = await fetch('http://localhost:3002/api/deals', {
+            const res = await fetch('http://192.168.1.245:3002/api/deals', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(deal)
