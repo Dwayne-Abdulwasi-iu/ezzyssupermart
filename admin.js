@@ -1,5 +1,7 @@
 // admin.js
-const API_BASE = "http://localhost:3001";
+// Set API_BASE to use the correct backend address and port
+// Use /admin endpoints for menu and orders, matching your backend
+const API_BASE = "http://localhost:3001/admin";
 
 function showSection(sectionId) {
     document.querySelectorAll("section").forEach(sec => sec.style.display = "none");
@@ -20,11 +22,11 @@ function showSection(sectionId) {
 
 // Fetch menu items from backend
 async function fetchMenu() {
-    const response = await fetch(`${API_BASE}/admin/menu`);
+    const response = await fetch(`${API_BASE}/menu`); // changed from /admin/menu to /menu
     const menuItems = await response.json();
     document.getElementById("menu-items").innerHTML = menuItems.map(item => `
         <p id="menu-item-${item._id}">
-          <span class="menu-item-name">${item.name}</span> - $<span class="menu-item-price">${item.price}</span> <span class="menu-item-category">(${item.category})</span>
+          <span class="menu-item-name">${item.name}</span> - ₦<span class="menu-item-price">${item.price}</span> <span class="menu-item-category">(${item.category})</span>
           ${item.image ? `<img src="${item.image}" alt="${item.name}" style="height:32px;vertical-align:middle;margin-left:8px;border-radius:4px;">` : ''}
           <button onclick="editItem('${item._id}', '${item.name.replace(/'/g, "&#39;")}', ${item.price}, '${item.category}', '${item.image ? item.image.replace(/'/g, "&#39;") : ''}')">Edit</button>
           <button onclick="deleteItem('${item._id}')">Delete</button>
@@ -63,7 +65,7 @@ async function fetchMenu() {
           } else {
             formData.append('image', item.image || '');
           }
-          await fetch(`${API_BASE}/admin/menu/${item._id}`, {
+          await fetch(`${API_BASE}/menu/${item._id}`, {
             method: 'PUT',
             body: formData
           });
@@ -88,7 +90,7 @@ window.cancelEdit = function(id) {
 
 // Fetch orders from backend
 async function fetchOrders(searchTerm = '') {
-    const response = await fetch("http://localhost:3001/admin/orders");
+    const response = await fetch(`${API_BASE}/orders`);
     let orders = await response.json();
     // Sort orders by date descending (newest first)
     orders.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -142,7 +144,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // Fetch and render orders by status for each new section
 async function fetchAndRenderOrdersByStatus(status, containerId, searchTerm = '') {
-  const response = await fetch("http://localhost:3001/admin/orders");
+  const response = await fetch(`${API_BASE}/orders`);
   const orders = await response.json();
   let filtered = orders.filter(order => order.status === status);
   // Sort by date descending (newest first)
@@ -196,7 +198,7 @@ async function fetchCompletedOrders() { await fetchAndRenderOrdersByStatus('Comp
 async function fetchCancelledOrders() { await fetchAndRenderOrdersByStatus('Cancelled', 'cancelled-orders-list'); }
 
 window.showOrderDetails = function(orderId, orderOid) {
-  fetch("http://localhost:3001/admin/orders").then(res => res.json()).then(orders => {
+  fetch(`${API_BASE}/orders`).then(res => res.json()).then(orders => {
     // Try to find by id or _id (string or ObjectId)
     let order = orders.find(o => o.id === orderId || o._id === orderId || o._id === orderOid);
     if (!order) {
@@ -218,7 +220,7 @@ window.showOrderDetails = function(orderId, orderOid) {
         order.items.map(i => `
           <li style='margin-bottom:0.7em;'>
             <div><strong>${i.name}</strong></div>
-            ${i.image ? `<img src="${i.image.startsWith('http') ? i.image : 'http://localhost:3001' + i.image}" alt="${i.name}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;margin:6px 0;">` : ''}
+            ${i.image ? `<img src="${i.image.startsWith('http') ? i.image : API_BASE.replace('/api','') + i.image}" alt="${i.name}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;margin:6px 0;">` : ''}
           </li>
         `).join('') +
         `</ul></div>`;
@@ -230,7 +232,7 @@ window.showOrderDetails = function(orderId, orderOid) {
 
     // Use customer info for sending email
     document.getElementById('send-order-email-btn').onclick = function() {
-      fetch('http://localhost:3001/admin/orders/send-email-by-customer', {
+      fetch(`${API_BASE}/orders/send-email-by-customer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -290,7 +292,7 @@ if (addMenuForm) {
     if (imageInput.files && imageInput.files[0]) {
       formData.append('image', imageInput.files[0]);
     }
-    await fetch(`${API_BASE}/admin/menu`, {
+    await fetch(`${API_BASE}/menu`, {
       method: 'POST',
       body: formData
     });
@@ -327,7 +329,7 @@ if (imageInput && addMenuFormEl) {
 
 // Delete menu item
 async function deleteItem(id) {
-  await fetch(`${API_BASE}/admin/menu/${id}`, { method: 'DELETE' });
+  await fetch(`${API_BASE}/menu/${id}`, { method: 'DELETE' });
   fetchMenu();
 }
 
@@ -348,7 +350,7 @@ if (updateStatusForm) {
     e.preventDefault();
     const orderId = document.getElementById('updateOrderId').value;
     const status = document.getElementById('updateOrderStatus').value;
-    await fetch('http://localhost:3001/admin/orders/' + orderId + '/status', {
+    await fetch(`${API_BASE}/orders/` + orderId + '/status', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status })
@@ -360,7 +362,7 @@ if (updateStatusForm) {
 
 // Display all menu items in the Menu Item List section
 async function renderAllMenuItems() {
-  const response = await fetch(`${API_BASE}/admin/menu`);
+  const response = await fetch(`${API_BASE}/menu`);
   const menuItems = await response.json();
   document.getElementById('all-menu-items').innerHTML = menuItems.length
     ? `<div class="admin-menu-list">${menuItems.map(item => `
@@ -368,7 +370,7 @@ async function renderAllMenuItems() {
           ${item.image ? `<img src="${item.image.startsWith('http') ? item.image : API_BASE + item.image}" alt="${item.name}" class="admin-menu-img">` : ''}
           <div><strong>${item.name}</strong></div>
           <div>Category: ${item.category}</div>
-          <div>Price: $${item.price}</div>
+          <div>Price: ₦${item.price}</div>
           <button onclick="editListItem('${item._id}', '${item.name.replace(/'/g, "&#39;")}', ${item.price}, '${item.category}', '${item.image ? item.image.replace(/'/g, "&#39;") : ''}')">Edit</button>
           <button onclick="deleteItem('${item._id}'); renderAllMenuItems();">Delete</button>
           <form id="edit-list-form-${item._id}" class="admin-form edit-form" style="display:none; margin-top:8px;">
@@ -406,7 +408,7 @@ async function renderAllMenuItems() {
         } else {
           formData.append('image', item.image || '');
         }
-        await fetch(`${API_BASE}/admin/menu/${item._id}`, {
+        await fetch(`${API_BASE}/menu/${item._id}`, {
           method: 'PUT',
           body: formData
         });
@@ -454,7 +456,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // Fetch sales report by product name
 async function fetchSalesReport(productName = '') {
-  const response = await fetch("http://localhost:3001/admin/orders");
+  const response = await fetch(`${API_BASE}/orders`);
   const orders = await response.json();
   // Flatten all items from all orders
   let allItems = [];
