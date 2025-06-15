@@ -47,6 +47,9 @@
   <script src="menu.js"></script>
   <script src="main.js"></script>
   <script>
+    // Set the API base URL for all frontend scripts to use the deployed backend
+    window.API_BASE_URL = "https://ezzyssupermart.onrender.com";
+
     function updateCartCountBadge() {
       let cart = [];
       try {

@@ -1,3 +1,7 @@
+<script>
+    // Set the API base URL for all frontend scripts to use the deployed backend
+    window.API_BASE_URL = "https://ezzyssupermart.onrender.com";
+    </script>
 document.getElementById('checkout-form').onsubmit = async function(e) {
   // Require login before placing order
   if (!localStorage.getItem('token')) {

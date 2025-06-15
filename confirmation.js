@@ -41,3 +41,5 @@ function trackOrder() {
 function goHome() {
     window.location.href = 'index.html';
 }
+// Set the API base URL for all frontend scripts to use the deployed backend
+window.API_BASE_URL = "https://ezzyssupermart.onrender.com";
