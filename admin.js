@@ -1,7 +1,7 @@
 // admin.js
 // Set API_BASE to use the correct backend address and port
-// Use /admin endpoints for menu and orders, matching your backend
-const API_BASE = "http://localhost:3001/admin";
+// Use a global API base URL for Render deployment
+const API_BASE = (window.API_BASE_URL || "https://ezzyssupermart.onrender.com");
 
 function showSection(sectionId) {
     document.querySelectorAll("section").forEach(sec => sec.style.display = "none");
