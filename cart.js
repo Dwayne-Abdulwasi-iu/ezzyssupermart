@@ -1,4 +1,7 @@
 // cart.js
+// Set API_BASE to use the Render backend URL or allow override
+const API_BASE = (window.API_BASE_URL || "https://ezzyssupermart.onrender.com");
+
 function getCart() {
   return JSON.parse(localStorage.getItem('cart')) || [];
 }

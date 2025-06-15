@@ -1,7 +1,7 @@
 // menu.js
 // Menu rendering, filtering, and add-to-cart logic
 
-const API_BASE = "http://localhost:3001";
+const API_BASE = (window.API_BASE_URL || "https://ezzyssupermart.onrender.com");
 const categories = ['All'];
 let allMenuItems = [];
 let currentSearch = '';
