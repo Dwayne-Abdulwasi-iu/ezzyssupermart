@@ -12,10 +12,18 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // --- File paths ---
-const DATA_DIR = process.env.DATA_DIR || '/data';
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+function getWritableDataDir() {
+  const tryDirs = ['/data', path.join(__dirname, 'data')];
+  for (const dir of tryDirs) {
+    try {
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.accessSync(dir, fs.constants.W_OK);
+      return dir;
+    } catch (e) { /* not writable */ }
+  }
+  throw new Error('No writable data directory found!');
 }
+const DATA_DIR = getWritableDataDir();
 const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
 const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
