@@ -9,16 +9,25 @@ const nodemailer = require('nodemailer');
 const multer = require('multer');
 const path = require('path');
 const crypto = require('crypto');
+const fs = require('fs');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(__dirname));
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/vitto');
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/vitto', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => {
+  console.log('Connected to MongoDB');
+}).catch((err) => {
+  console.error('MongoDB connection error:', err);
+  process.exit(1);
+});
 
 // --- Mongoose Schemas ---
 const userSchema = new mongoose.Schema({ username: String, email: String, password: String, role: String, resetToken: String, resetTokenExpiry: Date, otp: String, otpExpiry: Date });
@@ -41,9 +50,13 @@ const transporter = nodemailer.createTransport({
 });
 
 // Multer setup for image uploads
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, 'uploads'));
+    cb(null, uploadsDir);
   },
   filename: function (req, file, cb) {
     const ext = path.extname(file.originalname);
