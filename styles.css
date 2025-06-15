@@ -459,6 +459,13 @@ body.home-bg {
   font-size: 1.1rem;
   box-shadow: 0 -2px 12px #0002;
 }
+.hidden-section {
+  display: none;
+}
+.export-print-btn {
+  margin-bottom: 12px;
+  float: right;
+}
 @media (max-width: 600px) {
   .footer-bottom {
     font-size: 1rem;

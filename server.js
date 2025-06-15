@@ -18,7 +18,8 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(__dirname));
 
-// Connect to MongoDB
+// --- DISABLED: MongoDB/Mongoose backend is no longer used. Use main.js instead. ---
+/*
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/vitto', {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -28,17 +29,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/vitto', {
   console.error('MongoDB connection error:', err);
   process.exit(1);
 });
-
-// --- Mongoose Schemas ---
-const userSchema = new mongoose.Schema({ username: String, email: String, password: String, role: String, resetToken: String, resetTokenExpiry: Date, otp: String, otpExpiry: Date });
-const menuSchema = new mongoose.Schema({ name: String, price: Number, category: String, image: String });
-const orderSchema = new mongoose.Schema({ id: String, items: Array, customer: Object, payment: Object, status: String, date: String });
-const paymentSchema = new mongoose.Schema({ orderId: String, amount: Number, method: String, status: String, date: String });
-
-const User = mongoose.model('User', userSchema);
-const Menu = mongoose.model('Menu', menuSchema);
-const Order = mongoose.model('Order', orderSchema);
-const Payment = mongoose.model('Payment', paymentSchema);
+*/
 
 // --- Nodemailer Setup ---
 const transporter = nodemailer.createTransport({
