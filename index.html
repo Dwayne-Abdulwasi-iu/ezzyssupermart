@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vitto Restaurant | Home</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="home-bg">
+  <header>
+    <nav class="navbar">
+      <a href="index.html" class="logo">Vitto</a>
+      <ul class="nav-links">
+        
+        <li>
+          <a href="cart.html" id="cart-link" class="cart-3d small-navbar-btn">
+            <span class="cart-icon">🛒</span>
+            <span id="cart-count" class="cart-count-badge">0</span>
+          </a>
+        </li>
+        <li><a href="contact.html" class="contact-3d">Contact</a></li>
+      </ul>
+      <a href="login.html" class="btn nav-login" id="login-btn">Login</a>
+      <a href="#" id="logout-btn" class="btn nav-logout" style="display:none;">Logout</a>
+      <span id="navbar-username"></span>
+    </nav>
+  </header>
+  <main class="container">
+    <section class="hero">
+      <h1>Welcome to Vitto Restaurant</h1>
+      <p>Delicious food, drinks, and desserts delivered to your door. Experience the taste of Italy!</p>
+      <a href="menu.html" class="btn">View Menu</a>
+    </section>
+    <section class="about">
+      <h2>About Us</h2>
+      <p>Vitto Restaurant brings authentic Italian cuisine to your table. Our chefs use the freshest ingredients to craft mouth-watering dishes, from classic pastas to decadent desserts. Whether you're dining in or ordering online, we promise a memorable experience.</p>
+    </section>
+    <div class="center-menu-btn-container">
+      <a href="menu.html" class="center-menu-btn">MENU</a>
+    </div>
+  </main>
+  <footer class="footer-bottom">
+    <p>&copy; 2025 Vitto Restaurant. All rights reserved.</p>
+  </footer>
+  <script src="main.js"></script>
+  <script>
+    function updateNavbarForUser() {
+      let user = null;
+      try {
+        user = JSON.parse(localStorage.getItem('user'));
+      } catch (e) {}
+      if (!user || !user.username) {
+        try {
+          const loginData = JSON.parse(localStorage.getItem('loginData'));
+          if (loginData && loginData.user && loginData.user.username) {
+            user = loginData.user;
+          }
+        } catch (e) {}
+      }
+      const usernameSpan = document.getElementById('navbar-username');
+      const loginBtn = document.getElementById('login-btn');
+      const logoutBtn = document.getElementById('logout-btn');
+      if (user && user.username) {
+        usernameSpan.textContent = `Welcome, ${user.username}!`;
+        usernameSpan.style.display = 'inline-block';
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'inline-block';
+      } else {
+        usernameSpan.textContent = '';
+        usernameSpan.style.display = 'none';
+        if (loginBtn) loginBtn.style.display = 'inline-block';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+      }
+      // Update cart count
+      let cart = [];
+      try {
+        cart = JSON.parse(localStorage.getItem('cart')) || [];
+      } catch (e) {}
+      const cartCount = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+      const cartCountEl = document.getElementById('cart-count');
+      if (cartCountEl) cartCountEl.textContent = cartCount;
+      // Force navbar update in case of async login
+      window.updateNavbarForUser = updateNavbarForUser;
+    }
+    document.getElementById('logout-btn').onclick = function(e) {
+      e.preventDefault();
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      // Optionally clear cart or other user data
+      // localStorage.removeItem('cart');
+      updateNavbarForUser();
+      window.location = 'login.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', updateNavbarForUser);
+  </script>
+</body>
+</html>

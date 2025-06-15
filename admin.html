@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+.admin-order-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f9f9f9;
+  border-radius: 6px;
+  padding: 10px 16px;
+  margin: 10px 0;
+  box-shadow: 0 1px 4px #eee;
+}
+.admin-order-row button {
+  margin-left: 10px;
+  background: #2196F3;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+.admin-order-row button:hover {
+  background: #1769aa;
+}
+.order-details-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 400px;
+  height: 100vh;
+  background: #fff;
+  box-shadow: -2px 0 12px rgba(0,0,0,0.12);
+  z-index: 1002;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+  display: flex;
+  flex-direction: column;
+}
+.order-details-panel.active {
+  transform: translateX(0);
+}
+.order-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 22px 12px 22px;
+  border-bottom: 1px solid #eee;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+.close-order-details {
+  background: none;
+  border: none;
+  font-size: 1.6em;
+  cursor: pointer;
+  color: #888;
+}
+#order-details-content {
+  padding: 22px;
+  overflow-y: auto;
+  flex: 1;
+}
+    </style>
+</head>
+<body>
+    <h2>Restaurant Admin Dashboard</h2>
+    <nav>
+        <button onclick="showSection('menu')">Manage Menu</button>
+        <button onclick="showSection('orders')">Track Orders</button>
+        
+
+        <button onclick="showSection('preparing-orders')">Preparing Orders</button>
+        <button onclick="showSection('ready-orders')">Ready Orders</button>
+        <button onclick="showSection('out-for-delivery-orders')">Out for Delivery Orders</button>
+        <button onclick="showSection('completed-orders')">Completed Orders</button>
+        <button onclick="showSection('cancelled-orders')">Cancelled Orders</button>
+        <button onclick="showSalesReport()">Sales Report</button>
+    </nav>
+    <section id="menu"> 
+      <h3>Manage Menu Items</h3> 
+      <form id="add-menu-form" class="admin-form" enctype="multipart/form-data">
+        <input type="text" id="itemName" placeholder="Item Name" required class="admin-input">
+        <input type="number" id="itemPrice" placeholder="Price" step="0.01" required class="admin-input price-input">
+        <label for="itemCategory" class="sr-only">Category</label>
+        <select id="itemCategory" required class="admin-input" title="Category">
+          <option value="">Category</option>
+          <option value="Starters">Starters</option>
+          <option value="Mains">Mains</option>
+          <option value="Desserts">Desserts</option>
+          <option value="Drinks">Drinks</option>
+        </select>
+        <label for="itemImage" class="sr-only">Image</label>
+        <input type="file" id="itemImage" accept="image/*" class="admin-input">
+        <button type="submit">Add Item</button>
+      </form>
+      <div id="menu-items"></div> 
+    </section>
+    <section id="menu-list">
+      <h3>Menu Item List</h3>
+      <div id="all-menu-items"></div>
+    </section>
+    <section id="orders"> 
+      <h3>Order Tracking</h3> 
+      <div id="orders-list"></div> 
+      <div id="order-status-update" class="order-status-update">
+        <h4>Update Order Status</h4>
+        <form id="update-status-form">
+          <input type="hidden" id="updateOrderId">
+          <label for="updateOrderStatus" class="sr-only">Order Status</label>
+          <select id="updateOrderStatus" required title="Order Status">
+            <option value="Preparing">Preparing</option>
+            <option value="Ready">Ready</option>
+            <option value="Out for Delivery">Out for Delivery</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+          <button type="submit">Update Status</button>
+        </form>
+      </div>
+    </section>
+    <section id="analytics"> <h3>Sales Reports</h3> <canvas id="paymentChart"></canvas><canvas id="monthlyReportChart"></canvas> <div id="report-data"></div> <button onclick="downloadPDF()">Download Monthly Report</button> </section>
+    <section id="preparing-orders">
+      <h3>Preparing Orders</h3>
+      <div id="preparing-orders-list"></div>
+    </section>
+    <section id="ready-orders">
+      <h3>Ready Orders</h3>
+      <div id="ready-orders-list"></div>
+    </section>
+    <section id="out-for-delivery-orders">
+      <h3>Out for Delivery Orders</h3>
+      <div id="out-for-delivery-orders-list"></div>
+    </section>
+    <section id="completed-orders">
+      <h3>Completed Orders</h3>
+      <div id="completed-orders-list"></div>
+    </section>
+    <section id="cancelled-orders">
+      <h3>Cancelled Orders</h3>
+      <div id="cancelled-orders-list"></div>
+    </section>
+    <!-- Order Details Panel (right side, hidden by default) -->
+    <div id="order-details-panel" class="order-details-panel">
+      <div class="order-details-header">
+        <span>Order Details</span>
+        <button onclick="closeOrderDetails()" class="close-order-details">&times;</button>
+      </div>
+      <div id="order-details-content"></div>
+    </div>
+    <!-- Sales Report Section -->
+    <section id="sales-report-section" style="display:none;">
+      <h2>Sales Report</h2>
+      <button onclick="exportSalesReport()" style="margin-bottom:12px;float:right;">Export/Print</button>
+      <div id="sales-report-content"></div>
+    </section>
+    <script src="admin.js"></script>
+    <script>
+// Add navigation to show the sales report section
+function showSalesReport() {
+  document.querySelectorAll("section").forEach(sec => sec.style.display = "none");
+  document.getElementById('sales-report-section').style.display = 'block';
+  fetchSalesReport();
+}
+</script>
+</body>
+</html>

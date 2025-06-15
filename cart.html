@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cart & Checkout | Vitto Restaurant</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <nav class="navbar">
+      <a href="index.html" class="logo">Vitto</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="menu.html">Menu</a></li>
+        <li><a href="cart.html">Cart</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>Your Cart</h1>
+    <div id="cart-items"></div>
+    <div id="cart-summary"></div>
+    <h2>Checkout</h2>
+    <form id="checkout-form">
+      <input type="text" name="name" placeholder="Full Name" required>
+      <input type="text" name="address" placeholder="Address" required>
+      <input type="text" name="contact" placeholder="Contact Number" required>
+      <input type="email" name="customerEmail" id="customerEmail" placeholder="Email (for order updates)" required>
+      <label for="payment-method">Payment Method</label>
+      <select id="payment-method" name="payment" required title="Payment Method">
+        <option value="">Select Payment Method</option>
+        <option value="card">Credit/Debit Card</option>
+        <option value="paypal">PayPal</option>
+      </select>
+      <button type="submit">Place Order</button>
+    </form>
+  </main>
+  <footer>
+    <p>&copy; 2025 Vitto Restaurant. All rights reserved.</p>
+  </footer>
+  <script src="cart.js"></script>
+  <script src="checkout.js"></script>
+</body>
+</html>
